@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f6f2">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>MeterMate — Shop electricity split</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+    <script src="pwa.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="MeterMate home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M18.5 3.5 8 17h7l-1.5 11.5L24 14h-7l1.5-10.5Z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span>metermate<span class="brand-dot">.</span></span>
+        </a>
+        <span class="privacy-note"><span class="privacy-dot"></span>Saved on this device</span>
+      </header>
+
+      <section class="intro">
+        <div class="eyebrow"><span class="eyebrow-icon">↗</span> SIMPLE, FAIR, EVERY MONTH</div>
+        <h1>Electricity, <span>settled.</span></h1>
+        <p>Enter this month’s meter readings. Get each shop’s share, ready to send.</p>
+      </section>
+
+      <div class="workspace">
+        <section class="entry-column" aria-label="Monthly bill details">
+          <div class="section-heading">
+            <div>
+              <span class="step-label">01 / YOUR BILL</span>
+              <h2>Reading details</h2>
+            </div>
+            <label class="month-field">
+              <span>Billing month</span>
+              <input id="billingMonth" type="month" aria-label="Billing month">
+            </label>
+          </div>
+
+          <article class="card meter-card">
+            <div class="card-heading">
+              <div class="meter-icon main-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h2m4 0h2m-8 4h8"/></svg>
+              </div>
+              <div>
+                <h3>Main meter</h3>
+                <p>Supplies both shops</p>
+              </div>
+              <span class="required-tag">REQUIRED</span>
+            </div>
+            <div class="reading-grid">
+              <label class="input-field">
+                <span>Previous reading</span>
+                <div class="input-wrap"><input id="mainOld" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 12450"><span>units</span></div>
+              </label>
+              <span class="reading-arrow" aria-hidden="true">→</span>
+              <label class="input-field">
+                <span>Current reading</span>
+                <div class="input-wrap"><input id="mainNew" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 12860"><span>units</span></div>
+              </label>
+            </div>
+            <div class="meter-result"><span>Main meter usage</span><strong id="mainUsage">— <small>units</small></strong></div>
+          </article>
+
+          <article class="card meter-card shop-meter-card">
+            <div class="card-heading">
+              <div class="meter-icon shop-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 5 4h14l2 6.5M4 10v10h16V10M3 10c0 1.7 1.2 3 2.7 3 1.2 0 2.1-.6 2.8-1.8.6 1.2 1.5 1.8 2.7 1.8s2.1-.6 2.8-1.8c.6 1.2 1.5 1.8 2.7 1.8 1.5 0 2.7-1.3 2.7-3M9 20v-5h6v5"/></svg>
+              </div>
+              <div>
+                <h3>Your shop’s sub-meter</h3>
+                <p>Tracks your shop separately</p>
+              </div>
+              <span class="required-tag">REQUIRED</span>
+            </div>
+            <div class="reading-grid">
+              <label class="input-field">
+                <span>Previous reading</span>
+                <div class="input-wrap"><input id="shopOld" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 3100"><span>units</span></div>
+              </label>
+              <span class="reading-arrow" aria-hidden="true">→</span>
+              <label class="input-field">
+                <span>Current reading</span>
+                <div class="input-wrap"><input id="shopNew" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 3285"><span>units</span></div>
+              </label>
+            </div>
+            <div class="meter-result"><span>Your shop usage</span><strong id="shopUsage">— <small>units</small></strong></div>
+          </article>
+
+          <label class="input-field bill-field">
+            <span class="bill-label">Total electricity bill <span>Enter the full amount on the bill</span></span>
+            <div class="input-wrap bill-input"><span class="currency-symbol">₹</span><input id="billAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><span class="currency-code">INR</span></div>
+          </label>
+
+          <p class="form-error" id="formError" role="alert" aria-live="polite"></p>
+          <div class="action-row">
+            <button class="button button-secondary" id="saveButton" type="button">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 3.5h11l2 2v11h-13v-13Z"/><path d="M6 3.5v5h8v-5m-8 13v-5h8v5"/></svg>
+              Save month
+            </button>
+            <button class="button button-primary" id="downloadButton" type="button" disabled>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5v10m0 0 4-4m-4 4-4-4M3 13v4h14v-4"/></svg>
+              Download bill image
+              <span class="jpg-tag">JPG</span>
+            </button>
+          </div>
+        </section>
+
+        <aside class="result-column" aria-label="Bill split result">
+          <div class="section-heading result-heading">
+            <div>
+              <span class="step-label">02 / YOUR SPLIT</span>
+              <h2>Here’s the breakdown</h2>
+            </div>
+          </div>
+
+          <div class="result-card" id="resultCard">
+            <div class="result-card-top">
+              <div>
+                <span class="result-month-label">BILLING PERIOD</span>
+                <strong id="resultMonth">Select a month</strong>
+              </div>
+              <span class="result-status" id="resultStatus"><span></span> AWAITING READINGS</span>
+            </div>
+
+            <div class="bill-total">
+              <span>Total bill</span>
+              <strong id="totalBill">₹—</strong>
+            </div>
+
+            <div class="share-list">
+              <div class="share-item">
+                <div class="share-avatar avatar-you">Y</div>
+                <div class="share-details"><strong id="yourShopNameResult">Your shop</strong><span id="yourUnits">— units</span></div>
+                <div class="share-amount"><strong id="yourShare">₹—</strong><span id="yourPercent">—%</span></div>
+              </div>
+              <div class="share-item">
+                <div class="share-avatar avatar-other">2</div>
+                <div class="share-details"><strong id="otherShopNameResult">Other shop</strong><span id="otherUnits">— units</span></div>
+                <div class="share-amount"><strong id="otherShare">₹—</strong><span id="otherPercent">—%</span></div>
+              </div>
+            </div>
+
+            <div class="usage-bar" aria-label="Usage split">
+              <span id="yourBar"></span><span id="otherBar"></span>
+            </div>
+            <div class="bar-legend"><span><i class="legend-you"></i>Your shop</span><span><i class="legend-other"></i>Other shop</span></div>
+            <div class="result-footnote" id="resultFootnote">Enter both meters’ readings to see the split.</div>
+          </div>
+
+          <div class="formula-note">
+            <span class="formula-icon" aria-hidden="true">ƒ</span>
+            <div><strong>How the split works</strong><p>Your shop’s units come from its sub-meter. The other shop’s units are the main-meter total minus your units. The bill is shared by units used.</p></div>
+          </div>
+
+          <section class="history-section">
+            <div class="history-heading"><h3>Saved months</h3><span id="historyCount">0</span></div>
+            <div class="history-list" id="historyList">
+              <p class="empty-history">Your saved bills will show up here.</p>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <footer class="page-footer">
+        <span>MeterMate <span class="footer-dot">·</span> A clearer way to split the bill</span>
+        <span>Readings and saved bills stay in this browser.</span>
+      </footer>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
