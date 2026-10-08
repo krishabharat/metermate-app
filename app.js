@@ -217,13 +217,66 @@ function renderHistory() {
 
   output.historyList.innerHTML = "";
   for (const bill of bills) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "history-item";
-    button.innerHTML = `<span><strong>${escapeHtml(getMonthLabel(bill.month))}</strong><small>${escapeHtml(formatUnits(bill.mainUnits))} · ${escapeHtml(bill.yourShopName)}</small></span><span class="history-share"><strong>${escapeHtml(formatMoney(bill.bill))}</strong><small>${escapeHtml(formatMoney(bill.yourAmount))} your share</small></span>`;
-    button.addEventListener("click", () => loadBill(bill));
-    output.historyList.append(button);
+    const item = document.createElement("div");
+    item.className = "history-item";
+
+    const loadButton = document.createElement("button");
+    loadButton.type = "button";
+    loadButton.className = "history-load";
+    loadButton.innerHTML = `<span><strong>${escapeHtml(getMonthLabel(bill.month))}</strong><small>${escapeHtml(formatUnits(bill.mainUnits))} · ${escapeHtml(bill.yourShopName)}</small></span><span class="history-share"><strong>${escapeHtml(formatMoney(bill.bill))}</strong><small>${escapeHtml(formatMoney(bill.yourAmount))} your share</small></span>`;
+    loadButton.addEventListener("click", () => loadBill(bill));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "history-delete";
+    deleteButton.setAttribute("aria-label", `Delete saved bill for ${getMonthLabel(bill.month)}`);
+    deleteButton.title = "Delete saved bill";
+    deleteButton.innerHTML = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 5.5h13m-11.5 0 .8 11h8.4l.8-11M7.5 5.5V3.7h5v1.8m-4.5 3v5m4-5v5"/></svg>';
+    deleteButton.addEventListener("click", () => deleteSavedBill(bill.month));
+
+    item.append(loadButton, deleteButton);
+    output.historyList.append(item);
   }
+}
+
+function deleteSavedBill(month) {
+  const monthLabel = getMonthLabel(month);
+  const confirmed = window.confirm(
+    `Delete the saved bill for ${monthLabel}? This also clears the current entry for that month. This cannot be undone.`,
+  );
+  if (!confirmed) return;
+
+  const bills = readSavedBills();
+  const remainingBills = bills.filter((bill) => bill.month !== month);
+  if (remainingBills.length === bills.length) {
+    renderHistory();
+    showToast(`No saved bill was found for ${monthLabel}.`);
+    return;
+  }
+  if (!saveBills(remainingBills)) return;
+
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || "null");
+    if (draft?.month === month) {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+  } catch (error) {
+    console.error("The saved bill was deleted, but its draft could not be cleared:", error);
+    renderHistory();
+    showToast("Bill deleted, but its saved draft could not be cleared.");
+    return;
+  }
+
+  if (fields.billingMonth.value === month) {
+    fields.mainUnits.value = "";
+    fields.shopOld.value = "";
+    fields.shopNew.value = "";
+    fields.billAmount.value = "";
+  }
+
+  renderHistory();
+  render();
+  showToast(`${monthLabel} bill deleted.`);
 }
 
 function escapeHtml(value) {

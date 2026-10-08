@@ -144,13 +144,18 @@ h1, h2, h3, p { margin-top: 0; }
 .history-heading > span { display: grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 6px; background: #e9eee8; color: #758179; font-size: 9px; font-weight: 700; }
 .history-list { display: grid; gap: 6px; }
 .empty-history { margin: 0; padding: 13px; border: 1px dashed #dce3dc; border-radius: 8px; color: #909a94; font-size: 10px; text-align: center; }
-.history-item { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px; border: 1px solid #e7ece6; border-radius: 8px; background: #fff; text-align: left; cursor: pointer; }
+.history-item { min-width: 0; display: flex; align-items: stretch; gap: 4px; padding: 4px 5px 4px 11px; border: 1px solid #e7ece6; border-radius: 8px; background: #fff; }
 .history-item:hover { border-color: #adc9b7; background: #fbfdfb; }
-.history-item span { display: grid; gap: 3px; }
+.history-load { min-width: 0; flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 5px 6px 0; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.history-load > span { min-width: 0; display: grid; gap: 3px; }
 .history-item strong { color: #42534b; font-size: 10px; }
 .history-item small { color: #929c96; font-size: 9px; }
 .history-item b { font: 700 11px Manrope, sans-serif; }
 .history-item .history-share { text-align: right; }
+.history-delete { width: 34px; height: 34px; flex: 0 0 auto; align-self: center; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #9a706b; cursor: pointer; }
+.history-delete:hover { background: #faeeec; color: #af453d; }
+.history-delete:focus-visible, .history-load:focus-visible { outline: 2px solid #6caa88; outline-offset: 2px; }
+.history-delete svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
 .page-footer { display: flex; justify-content: space-between; gap: 16px; padding: 23px 0 30px; margin-top: 28px; border-top: 1px solid #e6e9e3; color: #929c96; font-size: 9px; }
 .footer-dot { padding: 0 4px; color: #c1c9c3; }

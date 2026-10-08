@@ -10,7 +10,8 @@ Open `index.html` in a modern browser, or publish the app using the steps below 
 - The other shop's units are the main-meter usage minus your shop's units.
 - The bill is split in proportion to those units, with rounding arranged so both shares add up to the total bill.
 - The current entry saves automatically in this browser and returns when you open the app again.
-- Select **Save month** to also add a completed bill to the saved-month history, or **Download bill image** to create a shareable JPG.
+- Select **Save month** to also add a completed bill to the saved-month history. Select a saved month to reload it, or use its trash button to delete it after confirmation. Deleting a month also clears that month's current draft.
+- Select **Download bill image** to create a shareable JPG.
 
 ## Put it on GitHub and publish it with Vercel
 

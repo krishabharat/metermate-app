@@ -1,4 +1,4 @@
-const CACHE_NAME = "metermate-static-v2";
+const CACHE_NAME = "metermate-static-v3";
 const APP_FILES = [
   "./",
   "./index.html",
