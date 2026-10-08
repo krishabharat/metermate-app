@@ -1,14 +1,12 @@
 const fields = {
   billingMonth: document.querySelector("#billingMonth"),
-  mainOld: document.querySelector("#mainOld"),
-  mainNew: document.querySelector("#mainNew"),
+  mainUnits: document.querySelector("#mainUnits"),
   shopOld: document.querySelector("#shopOld"),
   shopNew: document.querySelector("#shopNew"),
   billAmount: document.querySelector("#billAmount"),
 };
 
 const output = {
-  mainUsage: document.querySelector("#mainUsage"),
   shopUsage: document.querySelector("#shopUsage"),
   resultMonth: document.querySelector("#resultMonth"),
   resultStatus: document.querySelector("#resultStatus"),
@@ -28,6 +26,7 @@ const output = {
 };
 
 const STORAGE_KEY = "metermate.savedBills";
+const DRAFT_STORAGE_KEY = "metermate.currentDraft";
 const formatter = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 });
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -40,6 +39,48 @@ let toastTimer;
 
 const currentMonth = new Date();
 fields.billingMonth.value = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
+
+function restoreDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || "null");
+    if (!draft || typeof draft !== "object") return;
+
+    if (typeof draft.month === "string" && /^\d{4}-\d{2}$/.test(draft.month)) {
+      fields.billingMonth.value = draft.month;
+    }
+    fields.mainUnits.value = draft.mainUnits ?? "";
+    fields.shopOld.value = draft.shopOld ?? "";
+    fields.shopNew.value = draft.shopNew ?? "";
+    fields.billAmount.value = draft.billAmount ?? "";
+  } catch (error) {
+    setDraftStatus("Saved entry could not be restored on this device.", true);
+    console.error("Could not restore the current bill draft:", error);
+  }
+}
+
+function saveDraft() {
+  const draft = {
+    month: fields.billingMonth.value,
+    mainUnits: fields.mainUnits.value,
+    shopOld: fields.shopOld.value,
+    shopNew: fields.shopNew.value,
+    billAmount: fields.billAmount.value,
+  };
+
+  try {
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    setDraftStatus("Your current entry saves automatically on this device.");
+  } catch (error) {
+    setDraftStatus("Could not save your current entry on this device.", true);
+    console.error("Could not save the current bill draft:", error);
+  }
+}
+
+function setDraftStatus(message, isError = false) {
+  const status = document.querySelector("#draftStatus");
+  status.textContent = message;
+  status.classList.toggle("error", isError);
+}
 
 function numericValue(field) {
   if (field.value.trim() === "") return null;
@@ -62,16 +103,15 @@ function getMonthLabel(month) {
 }
 
 function getCalculation() {
-  const mainOld = numericValue(fields.mainOld);
-  const mainNew = numericValue(fields.mainNew);
+  const mainUnits = numericValue(fields.mainUnits);
   const shopOld = numericValue(fields.shopOld);
   const shopNew = numericValue(fields.shopNew);
   const bill = numericValue(fields.billAmount);
-  const anyReading = [mainOld, mainNew, shopOld, shopNew].some((value) => value !== null);
+  const anyReading = [mainUnits, shopOld, shopNew].some((value) => value !== null);
 
   if (!anyReading && bill === null) return { status: "empty" };
-  if ([mainOld, mainNew, shopOld, shopNew].some((value) => value === null)) {
-    return { status: "incomplete", message: "Enter previous and current readings for both meters." };
+  if ([mainUnits, shopOld, shopNew].some((value) => value === null)) {
+    return { status: "incomplete", message: "Enter this month’s main-meter units and both sub-meter readings." };
   }
   if (bill === null || bill < 0) {
     return { status: "incomplete", message: "Enter the total bill amount." };
@@ -79,14 +119,13 @@ function getCalculation() {
   if (!fields.billingMonth.value) {
     return { status: "incomplete", message: "Select the billing month." };
   }
-  if ([mainOld, mainNew, shopOld, shopNew].some((value) => value < 0)) {
-    return { status: "invalid", message: "Meter readings cannot be negative." };
+  if ([mainUnits, shopOld, shopNew].some((value) => value < 0)) {
+    return { status: "invalid", message: "Meter units and readings cannot be negative." };
   }
 
-  const mainUnits = mainNew - mainOld;
   const yourUnits = shopNew - shopOld;
-  if (mainUnits < 0 || yourUnits < 0) {
-    return { status: "invalid", message: "A current reading is lower than its previous reading. Check the readings or meter reset." };
+  if (yourUnits < 0) {
+    return { status: "invalid", message: "Your current sub-meter reading is below the previous reading. Check the readings or meter reset." };
   }
   if (yourUnits > mainUnits) {
     return { status: "invalid", message: "Your sub-meter usage cannot exceed the main-meter usage." };
@@ -117,7 +156,6 @@ function render() {
   const result = getCalculation();
   currentCalculation = result.status === "valid" ? result : null;
   output.formError.textContent = result.message || "";
-  output.mainUsage.innerHTML = result.mainUnits === undefined ? "— <small>units</small>" : `${formatter.format(result.mainUnits)} <small>units</small>`;
   output.shopUsage.innerHTML = result.yourUnits === undefined ? "— <small>units</small>" : `${formatter.format(result.yourUnits)} <small>units</small>`;
   output.resultMonth.textContent = getMonthLabel(fields.billingMonth.value);
   output.totalBill.textContent = result.bill === undefined ? "₹—" : formatMoney(result.bill);
@@ -200,11 +238,11 @@ function escapeHtml(value) {
 
 function loadBill(bill) {
   fields.billingMonth.value = bill.month;
-  fields.mainOld.value = bill.mainOld;
-  fields.mainNew.value = bill.mainNew;
+  fields.mainUnits.value = bill.mainUnits;
   fields.shopOld.value = bill.shopOld;
   fields.shopNew.value = bill.shopNew;
   fields.billAmount.value = bill.bill;
+  saveDraft();
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
   showToast(`${getMonthLabel(bill.month)} loaded.`);
@@ -221,8 +259,6 @@ function saveCurrentBill() {
   const bills = readSavedBills();
   const entry = {
     ...result,
-    mainOld: numericValue(fields.mainOld),
-    mainNew: numericValue(fields.mainNew),
     shopOld: numericValue(fields.shopOld),
     shopNew: numericValue(fields.shopNew),
     yourShopName: "Your shop",
@@ -363,10 +399,17 @@ function downloadBillImage() {
 }
 
 for (const field of Object.values(fields)) {
-  field.addEventListener("input", render);
-  field.addEventListener("change", render);
+  field.addEventListener("input", () => {
+    saveDraft();
+    render();
+  });
+  field.addEventListener("change", () => {
+    saveDraft();
+    render();
+  });
 }
 document.querySelector("#saveButton").addEventListener("click", saveCurrentBill);
 document.querySelector("#downloadButton").addEventListener("click", downloadBillImage);
+restoreDraft();
 render();
 renderHistory();

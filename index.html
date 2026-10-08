@@ -58,16 +58,10 @@
             </div>
             <div class="reading-grid">
               <label class="input-field">
-                <span>Previous reading</span>
-                <div class="input-wrap"><input id="mainOld" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 12450"><span>units</span></div>
-              </label>
-              <span class="reading-arrow" aria-hidden="true">→</span>
-              <label class="input-field">
-                <span>Current reading</span>
-                <div class="input-wrap"><input id="mainNew" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 12860"><span>units</span></div>
+                <span>Total units used this month</span>
+                <div class="input-wrap"><input id="mainUnits" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 400"><span>units</span></div>
               </label>
             </div>
-            <div class="meter-result"><span>Main meter usage</span><strong id="mainUsage">— <small>units</small></strong></div>
           </article>
 
           <article class="card meter-card shop-meter-card">
@@ -96,7 +90,7 @@
           </article>
 
           <label class="input-field bill-field">
-            <span class="bill-label">Total electricity bill <span>Enter the full amount on the bill</span></span>
+            <span class="bill-label">Total electricity bill this month <span>Enter the full amount on the bill</span></span>
             <div class="input-wrap bill-input"><span class="currency-symbol">₹</span><input id="billAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><span class="currency-code">INR</span></div>
           </label>
 
@@ -112,6 +106,7 @@
               <span class="jpg-tag">JPG</span>
             </button>
           </div>
+          <p class="draft-status" id="draftStatus" role="status" aria-live="polite">Your current entry saves automatically on this device.</p>
         </section>
 
         <aside class="result-column" aria-label="Bill split result">
